@@ -1,0 +1,41 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+IF(NOT CMAKE_BUILD_TYPE)
+    SET(CMAKE_BUILD_TYPE "DEBUG")
+ENDIF()
+
+find_package(PCL 1.7 REQUIRED)
+
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
+FIND_PACKAGE(Boost 1.58.0)
+IF(Boost_FOUND)
+    INCLUDE_DIRECTORIES("${Boost_INCLUDE_DIRS}" "/usr/include/python3.4m")
+    SET(Boost_USE_STATIC_LIBS OFF)
+    SET(Boost_USE_MULTITHREADED ON)
+    SET(Boost_USE_STATIC_RUNTIME ON)
+    FIND_PACKAGE(Boost COMPONENTS python)
+    #get_cmake_property(_variableNames VARIABLES)
+    #foreach (_variableName ${_variableNames})
+    #    message(STATUS "${_variableName}=${${_variableName}}")
+    #endforeach()
+
+    get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+    list(REMOVE_ITEM dirs "/usr/include/python2.7")
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES ${dirs})
+
+    ADD_LIBRARY(pclproc SHARED pclproc.cxx)
+    list(APPEND PCL_LIBRARIES "python3.4m")
+    list(APPEND PCL_LIBRARIES "/usr/lib64/libboost_python3.so.1.58.0")
+    
+    TARGET_LINK_LIBRARIES(pclproc ${PCL_LIBRARIES})
+ELSEIF(NoT Boost_FOUND)
+    MESSAGE(FATAL_ERROR "Unable to find the Boost!")
+ENDIF()
+
+IF(CMAKE_COMPILER_IS_GNUCXX)
+    ADD_DEFINITIONS("-Wall")
+ELSE()
+    MESSAGE(FATAL_ERROR "Wat is this compiler you are trying to use?")
+ENDIF()
